@@ -13,12 +13,16 @@
 from datetime import date
 import os
 import sys
+import pathlib
 
+sys.path.insert(0, pathlib.Path(__file__).parents[2].resolve().as_posix())
 sys.path.insert(0, os.path.abspath("../python"))
 root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, root_path)
 
 from version import get_latest_git_tag
+import doctest
+
 
 # -- Project information -----------------------------------------------------
 
@@ -42,6 +46,7 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx_panels",
     "sphinx_copybutton",
+    "sphinx.ext.doctest"
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -95,3 +100,16 @@ html_theme_options = {
     ],
 }
 html_favicon = "favicon.svg"
+
+# Adding a custom doctest option flag- IGNORE_RESULT for checking only
+# the functionality of the example, without any dependency on the output.
+IGNORE_RESULT = doctest.register_optionflag('IGNORE_RESULT')
+
+OutputChecker = doctest.OutputChecker
+class CustomOutputChecker(OutputChecker):
+    def check_output(self, want, got, optionflags):
+        if IGNORE_RESULT & optionflags:
+            return True
+        return OutputChecker.check_output(self, want, got, optionflags)
+
+doctest.OutputChecker = CustomOutputChecker
