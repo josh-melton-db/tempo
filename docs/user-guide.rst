@@ -51,13 +51,21 @@ Read in Data
 Reading data into a tempo ``tsdf`` is very easy. It provides a simple api to wrap a normal ``Spark`` dataframe with the
 time column and the optional partition column specification.
 
+>>> from pyspark.sql.functions import *
+>>> phone_accel_df = spark.read.format("csv").option("header", "true").load("./phones_accelerometer.csv").withColumn("event_ts", (col("Arrival_Time").cast("double")/1000).cast("timestamp")).withColumn("x", col("x").cast("double")).withColumn("y", col("y").cast("double")).withColumn("z", col("z").cast("double")).withColumn("event_ts_dbl", col("event_ts").cast("double"))
+>>> from tempo import *
+>>> phone_accel_tsdf = TSDF(phone_accel_df, ts_col="event_ts", partition_cols = ["User"]) # doctest: +IGNORE_RESULT
+>>> display(phone_accel_tsdf) # doctest: +IGNORE_RESULT
+
+
+
 .. code-block:: python
 
      from pyspark.sql.functions import *
      phone_accel_df = spark.read.format("csv").option("header", "true").load("dbfs:/home/tempo/Phones_accelerometer").withColumn("event_ts", (col("Arrival_Time").cast("double")/1000).cast("timestamp")).withColumn("x", col("x").cast("double")).withColumn("y", col("y").cast("double")).withColumn("z", col("z").cast("double")).withColumn("event_ts_dbl", col("event_ts").cast("double"))
      from tempo import *
-     phone_accel_tsdf = TSDF(phone_accel_df, ts_col="event_ts", partition_cols = ["User"])
-     display(phone_accel_tsdf)
+     phone_accel_tsdf = TSDF(phone_accel_df, ts_col="event_ts", partition_cols = ["User"]) # doctest: +IGNORE_RESULT
+     display(phone_accel_tsdf) # doctest: +IGNORE_RESULT
 
 Slice by Time
 ~~~~~~~~~~~~~~~~~~~~~~
