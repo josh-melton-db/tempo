@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Union, Collection, List
+from typing import cast, Any, Union, Collection, List
 
 import pyspark.sql.functions as Fn
 from pyspark.sql import Column
@@ -48,6 +48,13 @@ class TSIndex(ABC):
     def ts_col(self) -> str:
         """
         :return: the name of the primary timeseries column (may or may not be the same as the name)
+        """
+
+    @abstractmethod
+    def validate(self, df_schema: StructType) -> None:
+        """
+        Validate that this TSIndex is correctly represented in the given schema
+        :param df_schema: the schema for a :class:`DataFrame`
         """
 
     @abstractmethod
@@ -118,6 +125,16 @@ class SimpleTSIndex(TSIndex, ABC):
     @property
     def ts_col(self) -> str:
         return self.name
+
+    def validate(self, df_schema: StructType) -> None:
+        # the ts column must exist
+        assert( self.name in df_schema.fieldNames(),
+                f"The TSIndex column {self.name} does not exist in the given DataFrame")
+        schema_ts_col = df_schema[self.name]
+        # it must have the right type
+        schema_ts_type = schema_ts_col.dataType
+        assert( isinstance(schema_ts_type, type(self.dataType)),
+                f"The TSIndex column is of type {schema_ts_type}, but the expected type is {self.dataType}" )
 
     def renamed(self, new_name: str) -> "TSIndex":
         self.__name = new_name
@@ -234,6 +251,18 @@ class CompositeTSIndex(TSIndex, ABC):
     def primary_ts_col(self) -> str:
         return self.component(self.primary_ts_idx.name)
 
+    def validate(self, df_schema: StructType) -> None:
+        # validate that the composite field exists
+        assert( self.name in df_schema.fieldNames(),
+                f"The TSIndex column {self.name} does not exist in the given DataFrame")
+        schema_ts_col = df_schema[self.name]
+        # it must have the right type
+        schema_ts_type = schema_ts_col.dataType
+        assert( isinstance(schema_ts_type, StructType),
+                f"The TSIndex column is of type {schema_ts_type}, but the expected type is {StructType}" )
+        # validate the primary idx on the composite column
+        self.primary_ts_idx.validate(schema_ts_type)
+
     def renamed(self, new_name: str) -> "TSIndex":
         self.__name = new_name
         return self
@@ -277,6 +306,12 @@ class SubSequenceTSIndex(CompositeTSIndex):
     def sub_seq_col(self) -> str:
         return self.component(self.sub_sequence_idx.name)
 
+    def validate(self, df_schema: StructType) -> None:
+        super().validate(df_schema)
+        # check that the sub-sequence column validates against the composite column
+        composite_idx_type: StructType = cast(StructType, df_schema[self.name].dataType)
+        self.sub_sequence_idx.validate(composite_idx_type)
+
     def orderByExpr(self, reverse: bool = False) -> List[Column]:
         # build a composite expression of the primary index followed by the sub-sequence index
         exprs = [Fn.col(self.primary_ts_col), Fn.col(self.sub_seq_col)]
@@ -309,6 +344,17 @@ class ParsedTSIndex(CompositeTSIndex, ABC):
     @property
     def src_str_col(self):
         return self.component(self.__src_str_col)
+
+    def validate(self, df_schema: StructType) -> None:
+        super().validate(df_schema)
+        # make sure the parsed field exists
+        composite_idx_type: StructType = cast(StructType, df_schema[self.name].dataType)
+        assert( self.__src_str_col in composite_idx_type,
+                f"The src_str_col column {self.src_str_col} does not exist in the composite field {composite_idx_type}")
+        # make sure it's StringType
+        src_str_field_type = composite_idx_type[self.__src_str_col].dataType
+        assert( isinstance(src_str_field_type, StringType),
+                f"The src_str_col column {self.src_str_col} should be of StringType, but found {src_str_field_type} instead" )
 
 
 class ParsedTimestampIndex(ParsedTSIndex):
@@ -409,7 +455,12 @@ class TSSchema:
         return list({self.ts_idx.name}.union(self.series_ids))
 
     def validate(self, df_schema: StructType) -> None:
-        pass
+        # ensure that the TSIndex is valid
+        self.ts_idx.validate(df_schema)
+        # check series IDs
+        for sid in self.series_ids:
+            assert( sid in df_schema.fieldNames(),
+                    f"Series ID {sid} does not exist in the given DataFrame" )
 
     def find_observational_columns(self, df_schema: StructType) -> list[str]:
         return list(set(df_schema.fieldNames()) - set(self.structural_columns))
