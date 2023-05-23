@@ -45,7 +45,7 @@ class TSDF:
         :param df:
         :param ts_col:
         :param partition_cols:
-        :sequence_col every tsdf allows for a tie-breaker secondary sort key
+        :param sequence_col: every tsdf allows for a tie-breaker secondary sort key
         """
         self.ts_col = self.__validated_column(df, ts_col)
         self.partitionCols = (
