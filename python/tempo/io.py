@@ -38,8 +38,8 @@ def readTimescaleDb(spark: SparkSession,
     :param num_partitions: Number partitions to use for parallel reading from TimescaleDB
     :return: Tempo TSDF of Timescale Data
     """
-    if num_partitions == None:
-        get_partitions = (spark.read
+    if num_partitions is None:
+        num_partitions = (spark.read
                           .format("postgresql")
                           .option("query", f"SELECT num_chunks FROM timescaledb_information.hypertables "
                                            f"WHERE hypertable_name = '{table_name}';")
@@ -49,7 +49,7 @@ def readTimescaleDb(spark: SparkSession,
                           .option("password", password)
                           .load()
                           ).collect()[0][0]
-        num_partitions = get_partitions
+
 
     get_partition_col = (spark.read
                          .format("postgresql")
@@ -101,7 +101,7 @@ def readTimescaleDb(spark: SparkSession,
     if timeseries_col is None:
         timeseries_col = timescale_dimensions.filter("dimension_type == 'Time'").select("column_name").rdd.flatMap(
             lambda x: x).collect()[0]
-    if partition_col is None or partition_col is []:
+    if (partition_col is None) or (partition_col == []):
         partition_col = timescale_dimensions.filter("dimension_type == 'Space'").select("column_name").rdd.flatMap(
             lambda x: x).collect()
 
@@ -143,27 +143,31 @@ def writeTimescaleDb(spark: SparkSession,
          .option("dbtable", f'{database_name}.{table_name}')
          .save())
     else:
+
+        driver = "org.postgresql.Driver"
+        database_host = database_host_url
+        database_port = port
+        url = f"jdbc:postgresql://{database_host}:{database_port}/{database_name}"
+
+        connection_properties = {
+            "user": username,
+            "password": password,
+            "driver": driver
+        }
+
         schema = tsdf.df.schema
         sql_schema = ", ".join([f"{field.name} {field.dataType.simpleString()}" for field in schema])
-        (
-            spark.read.format("postgresql")
-            .option("query", f"CREATE TABLE {database_name}.{table_name} ({sql_schema});")
-            .option("host", database_host_url)
-            .option("port", port)
-            .option("user", username)
-            .option("password", password)
-            .load()
-        )
+        conn = spark._jvm.java.sql.DriverManager.getConnection(url, connection_properties)
+
+        # Create a Statement object to execute SQL queries
+        stmt = conn.createStatement()
+        create_query = f"CREATE TABLE {database_name}.{table_name} ({sql_schema});"
+        stmt.executeUpdate(create_query)
+
         space_partitions = ", ".join(str(element) for element in tsdf.partitionCols)
-        (
-            spark.read.format("postgresql")
-            .option("query", f"SELECT create_distributed_hypertable({database_name}.{table_name}, {tsdf.ts_col}, {space_partitions}, replication_factor => 2)")
-            .option("host", database_host_url)
-            .option("port", port)
-            .option("user", username)
-            .option("password", password)
-            .load()
-        )
+        create_hypertable_query = f"SELECT create_distributed_hypertable({database_name}.{table_name}, {tsdf.ts_col}, {space_partitions}, replication_factor => 2)
+        stmt.executeUpdate(create_hypertable_query)
+
         (tsdf.df
          .write
          .mode("append")
