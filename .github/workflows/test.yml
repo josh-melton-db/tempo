@@ -43,8 +43,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - dbr: "dbr73"
-            python-version: "3.7"
+          #- dbr: "dbr73"
+          #  python-version: "3.7"
           - dbr: "dbr91"
             python-version: "3.8"
           - dbr: "dbr104"
