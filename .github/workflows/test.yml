@@ -41,6 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Run Tests on all supported DBR configurations
     strategy:
+      fail-fast: false
       matrix:
         include:
           #- dbr: "dbr73"
