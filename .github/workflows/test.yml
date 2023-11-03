@@ -5,6 +5,7 @@ on:
     branches: [ '*' ]
   pull_request:
     branches: [ 'master' ]
+  workflow_dispatch:
 
 jobs:
   lint:
@@ -44,8 +45,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          #- dbr: "dbr73"
-          #  python-version: "3.7"
+          - dbr: "dbr73"
+            python-version: "3.7"
           - dbr: "dbr91"
             python-version: "3.8"
           - dbr: "dbr104"
