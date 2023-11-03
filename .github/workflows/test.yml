@@ -65,6 +65,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install Tox
         run: pip install tox
-      - name: Run Type Checks
+      - name: Run Tests
         working-directory: ./python
         run: tox -e ${{ matrix.dbr }}
