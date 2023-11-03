@@ -37,3 +37,33 @@ jobs:
       - name: Run Type Checks
         working-directory: ./python
         run: tox -e type-check
+  tests:
+    runs-on: ubuntu-latest
+    name: Run Tests on all supported DBR configurations
+    strategy:
+      matrix:
+        include:
+          - dbr: 73
+            py: 3.7
+          - dbr: 91
+            py: 3.8
+          - dbr: 104
+            py: 3.8
+          - dbr: 113
+            py: 3.9
+          - dbr: 122
+            py: 3.9
+          - dbr: 133
+            py: 3.10
+    steps:
+      - name: Check out source repository
+        uses: actions/checkout@v4
+      - name: Set up Python environment
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.py }}
+      - name: Install Tox
+        run: pip install tox
+      - name: Run Type Checks
+        working-directory: ./python
+        run: tox -e dbr${{ matrix.dbr }}
