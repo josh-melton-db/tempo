@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 class TSDF(WindowBuilder):
     """
-    This object is the main wrapper over a Spark data frame which allows a user to parallelize time series computations on a Spark data frame by various dimensions. The two dimensions required are partition_cols (list of columns by which to summarize) and ts_col (timestamp column, which can be epoch or TimestampType).
+    This object is the main wrapper over a Spark data frame which allows a user to parallelize time series computations on a Spark data frame by various dimensions. The two dimensions required are series_ids (list of columns by which to summarize) and ts_col (timestamp column, which can be epoch or TimestampType).
     """
 
     def __init__(

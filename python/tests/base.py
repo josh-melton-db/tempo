@@ -201,7 +201,7 @@ class SparkTest(unittest.TestCase):
         :param test_case_path: string representation of the data path e.g. : "tsdf_tests.BasicTests.test_describe"
         :type test_case_path: str
         """
-        file_name, class_name, func_name = test_case_path.split(".")
+        file_name, class_name, func_name = test_case_path.split(".")[-3:]
 
         # find our test data file
         test_data_file = self.__getTestDataFilePath(file_name)
