@@ -732,7 +732,7 @@ class BaseTransformationTests(SparkTest):
             "station"
         )
     ])    
-    def test_withColumnRenamedNotTS(self, init_tsdf_id, expected_tsdf_dict, old_col):
+    def test_withColumnRenamed(self, init_tsdf_id, expected_tsdf_dict, old_col):
         # load TSDF
         tsdf = self.get_test_data(init_tsdf_id).as_tsdf()
         # rename column
@@ -750,7 +750,7 @@ class BaseTransformationTests(SparkTest):
         ("parsed_ts_idx", "ts_idx", {"new_col", "symbol", "trade_pr"}),
         ("parsed_date_idx", "ts_idx", {"new_col", "station", "temp"}),
     ])
-    def test_withColumnRenamedTS(self, init_tsdf_id, old_ts_col, expected_tsdf_cols):
+    def test_withColumnRenamed_tsidx(self, init_tsdf_id, old_ts_col, expected_tsdf_cols):
         # load TSDF
         tsdf = self.get_test_data(init_tsdf_id).as_tsdf()
         # select column
@@ -775,20 +775,20 @@ class BaseTransformationTests(SparkTest):
         # validate selected column
         self.assertEqual(set(dropped_tsdf.df.columns), expected_tsdf_cols)
 
-    # @parameterized.expand([
-    #     ("simple_ts_idx", "event_ts"),
-    #     ("simple_ts_no_series", "*"),
-    #     ("simple_date_idx", "station", "temp"),
-    #     ("ordinal_double_index", "symbol", "trade_pr"),
-    #     ("ordinal_int_index", "order", "trade_pr"),
-    #     ("parsed_ts_idx", "ts_idx", "symbol"),
-    #     ("parsed_date_idx", "station"),
-    # ])
-    # def test_drop_structural(self, init_tsdf_id, col_to_drop):
-    #     # load TSDF
-    #     tsdf = self.get_test_data(init_tsdf_id).as_tsdf()       
-    #     # validate dropping the structural column throws an error
-    #     self.assertRaises(AssertionError, tsdf.drop(col_to_drop))
+    @parameterized.expand([
+        ("simple_ts_idx", "event_ts"),
+        ("simple_ts_no_series", "event_ts"),
+        ("simple_date_idx", "date"),
+        ("ordinal_double_index", "event_ts_dbl"),
+        ("ordinal_int_index", "order"),
+        ("parsed_ts_idx", "ts_idx"),
+        ("parsed_date_idx", "ts_idx"),
+    ])
+    def test_drop_tsidx(self, init_tsdf_id, col_to_drop):
+        # load TSDF
+        tsdf = self.get_test_data(init_tsdf_id).as_tsdf()       
+        # validate dropping the structural column throws an error
+        self.assertRaises(AssertionError, tsdf.drop, col_to_drop)
 
     @parameterized.expand([
         ("simple_ts_idx", "trade_pr", "string", 
