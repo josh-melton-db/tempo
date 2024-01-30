@@ -1101,7 +1101,179 @@ class BaseTransformationTests(SparkTest):
             }
         ),
         (
-            
+            "simple_date_idx", 
+            {
+                "ts_idx": {
+                    "ts_col": "date",
+                    "series_ids": ["station"]
+                },
+                "df": {
+                "schema": "station string, date string, temp float",
+                "date_convert": ["date"],
+                "data": [
+                    ["LGA", "2020-08-01", 27.58],
+                    ["LGA", "2020-08-02", 28.79],
+                    ["LGA", "2020-08-03", 28.53],
+                    ["LGA", "2020-08-04", 25.57]
+                ]
+            }
+            },
+            {
+                "ts_idx": {
+                    "ts_col": "date",
+                    "series_ids": ["station"]
+                },
+                "df": {
+                    "schema": "station string, date string, temp float",
+                    "date_convert": ["date"],
+                    "data": [
+                        ["YYZ", "2020-08-01", 24.16],
+                        ["YYZ", "2020-08-02", 22.25],
+                        ["YYZ", "2020-08-03", 20.62],
+                        ["YYZ", "2020-08-04", 20.65]
+                    ]
+                }
+            },
+        ),
+        (
+            "ordinal_double_index", 
+            {
+                "ts_idx": {
+                    "ts_col": "event_ts_dbl",
+                    "series_ids": ["symbol"]
+                },
+                "df": {
+                    "schema": "symbol string, event_ts_dbl double, trade_pr float",
+                    "data": [
+                        ["S1", 0.13, 349.21],
+                        ["S1", 1.207, 351.32],
+                        ["S1", 10.0, 361.1],
+                        ["S1", 24.357, 362.1]
+                    ]
+                }
+            },
+            {
+                "ts_idx": {
+                    "ts_col": "event_ts_dbl",
+                    "series_ids": ["symbol"]
+                },
+                "df": {
+                    "schema": "symbol string, event_ts_dbl double, trade_pr float",
+                    "data": [
+                        ["S2", 0.005, 743.01],
+                        ["S2", 0.1, 751.92],
+                        ["S2", 1.0, 761.10],
+                        ["S2", 10.0, 762.33]
+                    ]
+                }
+            }  
+        ),
+        (
+            "ordinal_int_index",
+            {
+                "ts_idx": {
+                    "ts_col": "order",
+                    "series_ids": ["symbol"]
+                },
+                "df": {
+                "schema": "symbol string, order int, trade_pr float",
+                "data": [
+                        ["S1", 1, 349.21],
+                        ["S1", 20, 351.32],
+                        ["S1", 127, 361.1],
+                        ["S1", 243, 362.1]
+                    ]
+                }
+            },
+            {
+                "ts_idx": {
+                    "ts_col": "order",
+                    "series_ids": ["symbol"]
+                },
+                "df": {
+                "schema": "symbol string, order int, trade_pr float",
+                "data": [
+                        ["S2", 0, 743.01],
+                        ["S2", 1, 751.92],
+                        ["S2", 10, 761.10],
+                        ["S2", 100, 762.33]
+                    ]
+                }
+            }
+        ),
+        (
+            "parsed_ts_idx",
+            {
+                "ts_idx": {
+                "ts_col": "event_ts",
+                "series_ids": ["symbol"],
+                "ts_fmt": "yyyy-MM-dd HH:mm:ss.SSS"
+                },
+                "tsdf_constructor":  "fromStringTimestamp",
+                "df": {
+                "schema": "symbol string, event_ts string, trade_pr float",
+                "data": [
+                        ["S1", "2020-08-01 00:00:10.010", 349.21],
+                        ["S1", "2020-08-01 00:01:12.021", 351.32],
+                        ["S1", "2020-09-01 00:02:10.032", 361.1],
+                        ["S1", "2020-09-01 00:19:12.043", 362.1]
+                    ]
+                }
+            },
+            {
+                "ts_idx": {
+                "ts_col": "event_ts",
+                "series_ids": ["symbol"],
+                "ts_fmt": "yyyy-MM-dd HH:mm:ss.SSS"
+                },
+                "tsdf_constructor":  "fromStringTimestamp",
+                "df": {
+                "schema": "symbol string, event_ts string, trade_pr float",
+                "data": [
+                        ["S2", "2020-08-01 00:01:10.054", 743.01],
+                        ["S2", "2020-08-01 00:01:24.065", 751.92],
+                        ["S2", "2020-09-01 00:02:10.076", 761.10],
+                        ["S2", "2020-09-01 00:20:42.087", 762.33]
+                    ]
+                }
+            },
+        ),
+        (
+            "parsed_date_idx",
+            {
+                "ts_idx": {
+                    "ts_col": "date",
+                    "series_ids": ["station"],
+                    "ts_fmt": "yyyy-MM-dd"
+                },
+                "tsdf_constructor":  "fromStringTimestamp",
+                "df": {
+                "schema": "station string, date string, temp float",
+                "data": [
+                        ["LGA", "2020-08-01", 27.58],
+                        ["LGA", "2020-08-02", 28.79],
+                        ["LGA", "2020-08-03", 28.53],
+                        ["LGA", "2020-08-04", 25.57]
+                    ]
+                }
+            },
+            {
+                "ts_idx": {
+                    "ts_col": "date",
+                    "series_ids": ["station"],
+                    "ts_fmt": "yyyy-MM-dd"
+                },
+                "tsdf_constructor":  "fromStringTimestamp",
+                "df": {
+                "schema": "station string, date string, temp float",
+                "data": [
+                        ["YYZ", "2020-08-01", 24.16],
+                        ["YYZ", "2020-08-02", 22.25],
+                        ["YYZ", "2020-08-03", 20.62],
+                        ["YYZ", "2020-08-04", 20.65]
+                    ]
+                }
+            }
         )
     ])
     def test_union(self, init_tsdf_id, tsdf_one_dict, tsdf_two_dict):
@@ -1114,9 +1286,505 @@ class BaseTransformationTests(SparkTest):
         unioned_tsdf = tsdf_one.union(tsdf_two)
         self.assertDataFrameEquality(unioned_tsdf, expected_tsdf)
 
-    @parameterized.expand([''])
-    def test_unionByName(self, init_tsdf_id, col_to_change, new_type, expected_schema):
-        ...
+    @parameterized.expand([
+        (
+            "simple_ts_idx",
+            {
+                "ts_idx": {"ts_col": "event_ts", "series_ids": ["symbol"]},
+                "df": {
+                    "schema": "symbol string, trade_pr float, event_ts string",
+                    "ts_convert": ["event_ts"],
+                    "data": [
+                        ["S1", 349.21, "2020-08-01 00:00:10"],
+                        ["S1", 351.32, "2020-08-01 00:01:12"],
+                        ["S1", 361.1, "2020-09-01 00:02:10"],
+                        ["S1", 362.1, "2020-09-01 00:19:12"],
+                    ]
+                },
+            },
+            {
+                "ts_idx": {"ts_col": "event_ts", "series_ids": ["symbol"]},
+                "df": {
+                    "schema": "symbol string, event_ts string, trade_pr float",
+                    "ts_convert": ["event_ts"],
+                    "data": [
+                        ["S2", "2020-08-01 00:01:10", 743.01],
+                        ["S2", "2020-08-01 00:01:24", 751.92],
+                        ["S2", "2020-09-01 00:02:10", 761.10],
+                        ["S2", "2020-09-01 00:20:42", 762.33]
+                    ]
+                },
+            },
+        ),
+        (
+            "simple_ts_no_series",
+            {
+                "ts_idx": {
+                    "ts_col": "event_ts",
+                    "series_ids": []
+                },
+                "df": {
+                    "schema": "trade_pr float, event_ts string",
+                    "ts_convert": ["event_ts"],
+                    "data": [
+                        [349.21, "2020-08-01 00:00:10"],
+                        [743.01, "2020-08-01 00:01:10"],
+                        [351.32, "2020-08-01 00:01:12"],
+                        [751.92, "2020-08-01 00:01:24"],
+                    ]
+                }
+            },
+            {
+                "ts_idx": {
+                    "ts_col": "event_ts",
+                    "series_ids": []
+                },
+                "df": {
+                    "schema": "event_ts string, trade_pr float",
+                    "ts_convert": ["event_ts"],
+                    "data": [
+                        ["2020-09-01 00:02:10", 361.1],
+                        ["2020-09-01 00:19:12", 362.1],
+                        ["2020-09-01 00:20:42", 762.33]
+                    ]
+                }
+            }
+        ),
+        (
+            "simple_date_idx", 
+            {
+                "ts_idx": {
+                    "ts_col": "date",
+                    "series_ids": ["station"]
+                },
+                "df": {
+                "schema": "station string, temp float, date string",
+                "date_convert": ["date"],
+                "data": [
+                    ["LGA", 27.58, "2020-08-01"],
+                    ["LGA", 28.79, "2020-08-02"],
+                    ["LGA", 28.53, "2020-08-03"],
+                    ["LGA", 25.57, "2020-08-04"]
+                ]
+            }
+            },
+            {
+                "ts_idx": {
+                    "ts_col": "date",
+                    "series_ids": ["station"]
+                },
+                "df": {
+                    "schema": "station string, date string, temp float",
+                    "date_convert": ["date"],
+                    "data": [
+                        ["YYZ", "2020-08-01", 24.16],
+                        ["YYZ", "2020-08-02", 22.25],
+                        ["YYZ", "2020-08-03", 20.62],
+                        ["YYZ", "2020-08-04", 20.65]
+                    ]
+                }
+            },
+        ),
+        (
+            "ordinal_double_index", 
+            {
+                "ts_idx": {
+                    "ts_col": "event_ts_dbl",
+                    "series_ids": ["symbol"]
+                },
+                "df": {
+                    "schema": "event_ts_dbl double, trade_pr float, symbol string",
+                    "data": [
+                        [0.13, 349.21, "S1"],
+                        [1.207, 351.32, "S1"],
+                        [10.0, 361.1, "S1"], 
+                        [24.357, 362.1, "S1"]
+                    ]
+                }
+            },
+            {
+                "ts_idx": {
+                    "ts_col": "event_ts_dbl",
+                    "series_ids": ["symbol"]
+                },
+                "df": {
+                    "schema": "symbol string, event_ts_dbl double, trade_pr float",
+                    "data": [
+                        ["S2", 0.005, 743.01],
+                        ["S2", 0.1, 751.92],
+                        ["S2", 1.0, 761.10],
+                        ["S2", 10.0, 762.33]
+                    ]
+                }
+            }  
+        ),
+        (
+            "ordinal_int_index",
+            {
+                "ts_idx": {
+                    "ts_col": "order",
+                    "series_ids": ["symbol"]
+                },
+                "df": {
+                "schema": "symbol string, trade_pr float, order int",
+                "data": [
+                        ["S1", 349.21, 1],
+                        ["S1", 351.32, 20],
+                        ["S1", 361.1, 127],
+                        ["S1", 362.1, 243]
+                    ]
+                }
+            },
+            {
+                "ts_idx": {
+                    "ts_col": "order",
+                    "series_ids": ["symbol"]
+                },
+                "df": {
+                "schema": "symbol string, order int, trade_pr float",
+                "data": [
+                        ["S2", 0, 743.01],
+                        ["S2", 1, 751.92],
+                        ["S2", 10, 761.10],
+                        ["S2", 100, 762.33]
+                    ]
+                }
+            }
+        ),
+        (
+            "parsed_ts_idx",
+            {
+                "ts_idx": {
+                    "ts_col": "event_ts",
+                    "series_ids": ["symbol"],
+                    "ts_fmt": "yyyy-MM-dd HH:mm:ss.SSS"
+                },
+                "tsdf_constructor":  "fromStringTimestamp",
+                "df": {
+                "schema": "event_ts string, trade_pr float, symbol string",
+                "data": [
+                        ["2020-08-01 00:00:10.010", 349.21, "S1"], 
+                        ["2020-08-01 00:01:12.021", 351.32, "S1"],
+                        ["2020-09-01 00:02:10.032", 361.1, "S1"],
+                        ["2020-09-01 00:19:12.043", 362.1, "S1"]
+                    ]
+                }
+            },
+            {
+                "ts_idx": {
+                "ts_col": "event_ts",
+                "series_ids": ["symbol"],
+                "ts_fmt": "yyyy-MM-dd HH:mm:ss.SSS"
+                },
+                "tsdf_constructor":  "fromStringTimestamp",
+                "df": {
+                "schema": "symbol string, event_ts string, trade_pr float",
+                "data": [
+                        ["S2", "2020-08-01 00:01:10.054", 743.01],
+                        ["S2", "2020-08-01 00:01:24.065", 751.92],
+                        ["S2", "2020-09-01 00:02:10.076", 761.10],
+                        ["S2", "2020-09-01 00:20:42.087", 762.33]
+                    ]
+                }
+            },
+        ),
+        (
+            "parsed_date_idx",
+            {
+                "ts_idx": {
+                    "ts_col": "date",
+                    "series_ids": ["station"],
+                    "ts_fmt": "yyyy-MM-dd"
+                },
+                "tsdf_constructor":  "fromStringTimestamp",
+                "df": {
+                "schema": "date string, temp float, station string",
+                "data": [
+                        ["2020-08-01", 27.58, "LGA"],
+                        ["2020-08-02", 28.79, "LGA"],
+                        ["2020-08-03", 28.53, "LGA"],
+                        ["2020-08-04", 25.57, "LGA"]
+                    ]
+                }
+            },
+            {
+                "ts_idx": {
+                    "ts_col": "date",
+                    "series_ids": ["station"],
+                    "ts_fmt": "yyyy-MM-dd"
+                },
+                "tsdf_constructor":  "fromStringTimestamp",
+                "df": {
+                "schema": "station string, date string, temp float",
+                "data": [
+                        ["YYZ", "2020-08-01", 24.16],
+                        ["YYZ", "2020-08-02", 22.25],
+                        ["YYZ", "2020-08-03", 20.62],
+                        ["YYZ", "2020-08-04", 20.65]
+                    ]
+                }
+            }
+        )
+    ])
+    def test_unionByNameNoMissing(self, init_tsdf_id, tsdf_one_dict, tsdf_two_dict):
+        # load expected TSDF
+        expected_tsdf = self.get_test_data(init_tsdf_id).as_tsdf()
+        # set up both TSDFs
+        tsdf_one = TestDataFrame(self.spark, tsdf_one_dict).as_tsdf()
+        tsdf_two = TestDataFrame(self.spark, tsdf_two_dict).as_tsdf()
+        # add column
+        unioned_tsdf = tsdf_one.unionByName(tsdf_two)
+        self.assertDataFrameEquality(unioned_tsdf, expected_tsdf)
+
+    @parameterized.expand([
+        (
+            "simple_ts_idx",
+            {
+                "ts_idx": {"ts_col": "event_ts", "series_ids": ["symbol"]},
+                "df": {
+                    "schema": "symbol string, event_ts string",
+                    "ts_convert": ["event_ts"],
+                    "data": [
+                        ["S1", "2020-08-01 00:00:10"],
+                        ["S1", "2020-08-01 00:01:12"],
+                        ["S1", "2020-09-01 00:02:10"],
+                        ["S1", "2020-09-01 00:19:12"],
+                    ]
+                },
+            },
+            {
+                "ts_idx": {"ts_col": "event_ts", "series_ids": ["symbol"]},
+                "df": {
+                    "schema": "symbol string, event_ts string, trade_pr float",
+                    "ts_convert": ["event_ts"],
+                    "data": [
+                        ["S2", "2020-08-01 00:01:10", 743.01],
+                        ["S2", "2020-08-01 00:01:24", 751.92],
+                        ["S2", "2020-09-01 00:02:10", 761.10],
+                        ["S2", "2020-09-01 00:20:42", 762.33]
+                    ]
+                },
+            },
+        ),
+        (
+            "simple_ts_no_series",
+            {
+                "ts_idx": {
+                    "ts_col": "event_ts",
+                    "series_ids": []
+                },
+                "df": {
+                    "schema": "event_ts string",
+                    "ts_convert": ["event_ts"],
+                    "data": [
+                        ["2020-08-01 00:00:10"],
+                        ["2020-08-01 00:01:10"],
+                        ["2020-08-01 00:01:12"],
+                        ["2020-08-01 00:01:24"],
+                    ]
+                }
+            },
+            {
+                "ts_idx": {
+                    "ts_col": "event_ts",
+                    "series_ids": []
+                },
+                "df": {
+                    "schema": "event_ts string, trade_pr float",
+                    "ts_convert": ["event_ts"],
+                    "data": [
+                        ["2020-09-01 00:02:10", 361.1],
+                        ["2020-09-01 00:19:12", 362.1],
+                        ["2020-09-01 00:20:42", 762.33]
+                    ]
+                }
+            }
+        ),
+        (
+            "simple_date_idx", 
+            {
+                "ts_idx": {
+                    "ts_col": "date",
+                    "series_ids": ["station"]
+                },
+                "df": {
+                "schema": "station string, date string",
+                "date_convert": ["date"],
+                "data": [
+                    ["LGA", "2020-08-01"],
+                    ["LGA", "2020-08-02"],
+                    ["LGA", "2020-08-03"],
+                    ["LGA", "2020-08-04"]
+                ]
+            }
+            },
+            {
+                "ts_idx": {
+                    "ts_col": "date",
+                    "series_ids": ["station"]
+                },
+                "df": {
+                    "schema": "station string, date string, temp float",
+                    "date_convert": ["date"],
+                    "data": [
+                        ["YYZ", "2020-08-01", 24.16],
+                        ["YYZ", "2020-08-02", 22.25],
+                        ["YYZ", "2020-08-03", 20.62],
+                        ["YYZ", "2020-08-04", 20.65]
+                    ]
+                }
+            },
+        ),
+        (
+            "ordinal_double_index", 
+            {
+                "ts_idx": {
+                    "ts_col": "event_ts_dbl",
+                    "series_ids": ["symbol"]
+                },
+                "df": {
+                    "schema": "event_ts_dbl double, symbol string",
+                    "data": [
+                        [0.13,  "S1"],
+                        [1.207, "S1"],
+                        [10.0, "S1"], 
+                        [24.357, "S1"]
+                    ]
+                }
+            },
+            {
+                "ts_idx": {
+                    "ts_col": "event_ts_dbl",
+                    "series_ids": ["symbol"]
+                },
+                "df": {
+                    "schema": "symbol string, event_ts_dbl double, trade_pr float",
+                    "data": [
+                        ["S2", 0.005, 743.01],
+                        ["S2", 0.1, 751.92],
+                        ["S2", 1.0, 761.10],
+                        ["S2", 10.0, 762.33]
+                    ]
+                }
+            }  
+        ),
+        (
+            "ordinal_int_index",
+            {
+                "ts_idx": {
+                    "ts_col": "order",
+                    "series_ids": ["symbol"]
+                },
+                "df": {
+                "schema": "symbol string, order int",
+                "data": [
+                        ["S1", 1],
+                        ["S1", 20],
+                        ["S1", 127],
+                        ["S1", 243]
+                    ]
+                }
+            },
+            {
+                "ts_idx": {
+                    "ts_col": "order",
+                    "series_ids": ["symbol"]
+                },
+                "df": {
+                "schema": "symbol string, order int, trade_pr float",
+                "data": [
+                        ["S2", 0, 743.01],
+                        ["S2", 1, 751.92],
+                        ["S2", 10, 761.10],
+                        ["S2", 100, 762.33]
+                    ]
+                }
+            }
+        ),
+        (
+            "parsed_ts_idx",
+            {
+                "ts_idx": {
+                    "ts_col": "event_ts",
+                    "series_ids": ["symbol"],
+                    "ts_fmt": "yyyy-MM-dd HH:mm:ss.SSS"
+                },
+                "tsdf_constructor":  "fromStringTimestamp",
+                "df": {
+                "schema": "event_ts string, symbol string",
+                "data": [
+                        ["2020-08-01 00:00:10.010", "S1"], 
+                        ["2020-08-01 00:01:12.021", "S1"],
+                        ["2020-09-01 00:02:10.032", "S1"],
+                        ["2020-09-01 00:19:12.043", "S1"]
+                    ]
+                }
+            },
+            {
+                "ts_idx": {
+                "ts_col": "event_ts",
+                "series_ids": ["symbol"],
+                "ts_fmt": "yyyy-MM-dd HH:mm:ss.SSS"
+                },
+                "tsdf_constructor":  "fromStringTimestamp",
+                "df": {
+                "schema": "symbol string, event_ts string, trade_pr float",
+                "data": [
+                        ["S2", "2020-08-01 00:01:10.054", 743.01],
+                        ["S2", "2020-08-01 00:01:24.065", 751.92],
+                        ["S2", "2020-09-01 00:02:10.076", 761.10],
+                        ["S2", "2020-09-01 00:20:42.087", 762.33]
+                    ]
+                }
+            },
+        ),
+        (
+            "parsed_date_idx",
+            {
+                "ts_idx": {
+                    "ts_col": "date",
+                    "series_ids": ["station"],
+                    "ts_fmt": "yyyy-MM-dd"
+                },
+                "tsdf_constructor":  "fromStringTimestamp",
+                "df": {
+                "schema": "date string, station string",
+                "data": [
+                        ["2020-08-01", "LGA"],
+                        ["2020-08-02", "LGA"],
+                        ["2020-08-03", "LGA"],
+                        ["2020-08-04", "LGA"]
+                    ]
+                }
+            },
+            {
+                "ts_idx": {
+                    "ts_col": "date",
+                    "series_ids": ["station"],
+                    "ts_fmt": "yyyy-MM-dd"
+                },
+                "tsdf_constructor":  "fromStringTimestamp",
+                "df": {
+                "schema": "station string, date string, temp float",
+                "data": [
+                        ["YYZ", "2020-08-01", 24.16],
+                        ["YYZ", "2020-08-02", 22.25],
+                        ["YYZ", "2020-08-03", 20.62],
+                        ["YYZ", "2020-08-04", 20.65]
+                    ]
+                }
+            }
+        )
+    ])
+    def test_unionByNameMissing(self, init_tsdf_id, tsdf_one_dict, tsdf_two_dict):
+        # load expected TSDF
+        expected_tsdf = self.get_test_data(init_tsdf_id).as_tsdf()
+        # set up both TSDFs
+        tsdf_one = TestDataFrame(self.spark, tsdf_one_dict).as_tsdf()
+        tsdf_two = TestDataFrame(self.spark, tsdf_two_dict).as_tsdf()
+        # add column
+        unioned_tsdf = tsdf_one.unionByName(tsdf_two, True)
+        self.assertEqual(set(unioned_tsdf.df.columns), set(expected_tsdf.df.columns))
 
 
 class TimeSlicingTests(SparkTest):
